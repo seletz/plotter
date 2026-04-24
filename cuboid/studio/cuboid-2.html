@@ -1,0 +1,1274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>CUBOID 2 — cubes + cylinders studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0a0a;
+  --panel: #0e0e0e;
+  --text: #ededed;
+  --muted: #6a6a6a;
+  --faint: #2a2a2a;
+  --rule: #1c1c1c;
+  --accent: #ffb800;
+  --paper-bg: #ecebe6;
+  --paper: #ffffff;
+  --ink: #0a0a0a;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-weight: 400;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 12px;
+  line-height: 1.45;
+  overflow: hidden;
+}
+
+body {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  grid-template-rows: 1fr 28px;
+  height: 100vh;
+}
+
+aside.panel {
+  grid-row: 1 / 3;
+  background: var(--panel);
+  border-right: 1px solid var(--rule);
+  overflow-y: auto;
+  padding: 22px 24px 40px;
+}
+
+aside.panel::-webkit-scrollbar { width: 8px; }
+aside.panel::-webkit-scrollbar-track { background: transparent; }
+aside.panel::-webkit-scrollbar-thumb { background: var(--faint); }
+
+header.title {
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--rule);
+  margin-bottom: 18px;
+}
+
+header.title h1 {
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+}
+
+header.title h1 .mark {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  background: var(--accent);
+  margin-right: 8px;
+  vertical-align: 1px;
+}
+
+header.title .subtitle {
+  font-size: 10px;
+  color: var(--muted);
+  margin-top: 6px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.mode-toggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-bottom: 22px;
+  padding-bottom: 22px;
+  border-bottom: 1px solid var(--rule);
+}
+
+.mode-toggle button {
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--faint);
+  padding: 10px 0;
+  font-family: inherit;
+  font-size: 9.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.mode-toggle button:hover { color: var(--text); border-color: var(--muted); }
+.mode-toggle button.active {
+  background: var(--accent);
+  color: var(--bg);
+  border-color: var(--accent);
+  font-weight: 500;
+}
+
+section.group { margin-bottom: 26px; }
+
+section.group > h2 {
+  font-size: 9.5px;
+  font-weight: 500;
+  color: var(--muted);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  padding-bottom: 6px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid var(--rule);
+  display: flex;
+  justify-content: space-between;
+}
+
+section.group > h2 .idx { color: var(--faint); }
+
+.ctrl {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: baseline;
+  gap: 4px 10px;
+  margin-bottom: 11px;
+}
+
+.ctrl .lbl { font-size: 11px; color: var(--text); letter-spacing: 0.04em; }
+
+.ctrl .val {
+  font-size: 11px;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  text-align: right;
+  min-width: 58px;
+}
+.ctrl .val .unit { color: var(--muted); font-weight: 300; margin-left: 2px; }
+
+.ctrl input[type=range] {
+  grid-column: 1 / -1;
+  width: 100%;
+  -webkit-appearance: none; appearance: none;
+  background: transparent; height: 18px; margin: 0;
+  cursor: ew-resize;
+}
+.ctrl input[type=range]::-webkit-slider-runnable-track { height: 1px; background: var(--faint); }
+.ctrl input[type=range]::-moz-range-track               { height: 1px; background: var(--faint); }
+.ctrl input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 2px; height: 14px; background: var(--accent);
+  border: 0; margin-top: -6.5px;
+  transition: transform 0.1s;
+}
+.ctrl input[type=range]:hover::-webkit-slider-thumb,
+.ctrl input[type=range]:active::-webkit-slider-thumb { transform: scaleX(4); }
+.ctrl input[type=range]::-moz-range-thumb {
+  width: 2px; height: 14px; background: var(--accent);
+  border: 0; border-radius: 0;
+  transition: transform 0.1s;
+}
+.ctrl input[type=range]:hover::-moz-range-thumb,
+.ctrl input[type=range]:active::-moz-range-thumb { transform: scaleX(4); }
+
+.readout-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: baseline;
+  padding: 3px 0;
+  font-size: 10.5px;
+}
+.readout-row .lbl { color: var(--muted); letter-spacing: 0.04em; }
+.readout-row .val { color: var(--text); font-variant-numeric: tabular-nums; }
+
+.mode-panel[hidden] { display: none; }
+
+.btn-row {
+  display: flex; gap: 8px; margin-top: 16px;
+  border-top: 1px solid var(--rule); padding-top: 18px;
+}
+button.action {
+  flex: 1; background: transparent; color: var(--text);
+  border: 1px solid var(--faint); padding: 8px 0;
+  font-family: inherit; font-size: 10px;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  cursor: pointer; transition: border-color 0.15s, color 0.15s;
+}
+button.action:hover  { border-color: var(--accent); color: var(--accent); }
+button.action:active { background: var(--accent); color: var(--bg); }
+
+main.stage {
+  background: var(--paper-bg);
+  display: flex; align-items: center; justify-content: center;
+  padding: 32px; position: relative; overflow: hidden;
+}
+
+.paper-wrap {
+  position: relative; max-width: 100%; max-height: 100%;
+  aspect-ratio: 420 / 297; width: 100%;
+  box-shadow: 0 0 0 1px #d0cfc8, 2px 2px 0 #d0cfc8;
+  background: var(--paper);
+}
+
+svg#canvas {
+  display: block; width: 100%; height: 100%;
+  background: var(--paper);
+  touch-action: none;
+}
+
+svg#canvas polyline {
+  fill: none; stroke: var(--ink); stroke-width: 0.35;
+  stroke-linecap: round; stroke-linejoin: miter;
+  vector-effect: non-scaling-stroke;
+}
+svg#canvas polygon.sil { fill: var(--paper); stroke: none; }
+
+svg#canvas .vp-mark {
+  stroke: var(--accent); stroke-width: 0.4; fill: none;
+  vector-effect: non-scaling-stroke; pointer-events: none;
+}
+svg#canvas .vp-label {
+  fill: var(--accent); font-family: 'IBM Plex Mono', monospace;
+  font-size: 5px; font-weight: 500; pointer-events: none;
+}
+svg#canvas .horizon-line {
+  stroke: var(--accent); stroke-width: 0.3;
+  stroke-dasharray: 1.5 2; opacity: 0.5;
+  vector-effect: non-scaling-stroke; pointer-events: none;
+}
+
+svg#canvas .handle-hit { fill: transparent; cursor: grab; }
+svg#canvas .handle-hit:active { cursor: grabbing; }
+svg#canvas .handle-core { fill: var(--accent); pointer-events: none; }
+svg#canvas .handle-ring {
+  fill: none; stroke: var(--accent); stroke-width: 0.5;
+  vector-effect: non-scaling-stroke; pointer-events: none;
+}
+svg#canvas .handle-label {
+  fill: var(--accent); font-family: 'IBM Plex Mono', monospace;
+  font-size: 5px; font-weight: 500; pointer-events: none;
+}
+svg#canvas .horizon-hit {
+  stroke: transparent; stroke-width: 12;
+  pointer-events: stroke; cursor: ns-resize;
+}
+svg#canvas .tether {
+  stroke: var(--accent); stroke-width: 0.25;
+  stroke-dasharray: 1 1; opacity: 0.4;
+  vector-effect: non-scaling-stroke; pointer-events: none;
+}
+
+.overlay-toggle {
+  position: absolute; top: 40px; right: 40px;
+  display: flex; gap: 6px;
+  font-size: 9.5px; letter-spacing: 0.1em; text-transform: uppercase;
+}
+.overlay-toggle label { cursor: pointer; user-select: none; }
+.overlay-toggle input[type=checkbox] { display: none; }
+.overlay-toggle label span {
+  border: 1px solid #c8c7bf; padding: 4px 8px;
+  display: inline-block; color: #8a8a82;
+}
+.overlay-toggle input[type=checkbox]:checked + span {
+  color: var(--ink); border-color: var(--ink);
+}
+
+.statusbar {
+  grid-column: 2 / 3; background: var(--panel);
+  border-top: 1px solid var(--rule);
+  display: flex; align-items: center;
+  padding: 0 16px; font-size: 10px;
+  color: var(--muted); letter-spacing: 0.08em; gap: 22px;
+}
+.statusbar .item { display: flex; gap: 6px; }
+.statusbar .item .k { color: var(--faint); text-transform: uppercase; }
+.statusbar .item .v { color: var(--text); font-variant-numeric: tabular-nums; }
+.statusbar .dot {
+  width: 5px; height: 5px; background: var(--accent);
+  opacity: 0; transition: opacity 0.25s;
+}
+.statusbar .dot.active { opacity: 1; }
+.statusbar .spacer { flex: 1; }
+.statusbar .err { color: #ff5a3c; }
+</style>
+</head>
+<body>
+
+<aside class="panel">
+
+  <header class="title">
+    <h1><span class="mark"></span>CUBOID 2</h1>
+    <div class="subtitle">cubes + cylinders</div>
+  </header>
+
+  <div class="mode-toggle">
+    <button data-mode="A" class="active">VP-driven</button>
+    <button data-mode="B">Camera-driven</button>
+  </div>
+
+  <section class="group">
+    <h2>Scene<span class="idx">00</span></h2>
+    <div class="ctrl">
+      <span class="lbl">master seed</span>
+      <span class="val"><span id="v-seed">42</span></span>
+      <input id="seed" type="range" min="0" max="999" step="1" value="42">
+    </div>
+    <div class="ctrl">
+      <span class="lbl">prism sides</span>
+      <span class="val"><span id="v-prism">8</span></span>
+      <input id="prism" type="range" min="6" max="24" step="2" value="8">
+    </div>
+  </section>
+
+  <section class="group">
+    <h2>Camera position<span class="idx">01</span></h2>
+    <div class="ctrl">
+      <span class="lbl">x</span>
+      <span class="val"><span id="v-camX">0.600</span><span class="unit">u</span></span>
+      <input id="camX" type="range" min="0" max="1.2" step="0.01" value="0.6">
+    </div>
+    <div class="ctrl">
+      <span class="lbl">y</span>
+      <span class="val"><span id="v-camY">0.600</span><span class="unit">u</span></span>
+      <input id="camY" type="range" min="0" max="1.2" step="0.01" value="0.6">
+    </div>
+    <div class="ctrl">
+      <span class="lbl">z</span>
+      <span class="val"><span id="v-camZ">0.600</span><span class="unit">u</span></span>
+      <input id="camZ" type="range" min="0" max="1.2" step="0.01" value="0.6">
+    </div>
+  </section>
+
+  <div class="mode-panel" data-mode="A">
+    <section class="group">
+      <h2>Vanishing points<span class="idx">02</span></h2>
+      <div class="ctrl">
+        <span class="lbl">VPL  x</span>
+        <span class="val"><span id="v-vpl">3.0</span><span class="unit">%</span></span>
+        <input id="vpl" type="range" min="-60" max="45" step="0.25" value="3">
+      </div>
+      <div class="ctrl">
+        <span class="lbl">VPR  x</span>
+        <span class="val"><span id="v-vpr">75.0</span><span class="unit">%</span></span>
+        <input id="vpr" type="range" min="55" max="160" step="0.25" value="75">
+      </div>
+      <div class="ctrl">
+        <span class="lbl">horizon  y</span>
+        <span class="val"><span id="v-hz">40.0</span><span class="unit">%</span></span>
+        <input id="hz" type="range" min="-50" max="150" step="0.25" value="40">
+      </div>
+      <div class="ctrl">
+        <span class="lbl">VPV  x</span>
+        <span class="val"><span id="v-vpvX">23.2</span><span class="unit">%</span></span>
+        <input id="vpvX" type="range" min="-60" max="160" step="0.25" value="23.22">
+      </div>
+      <div class="ctrl">
+        <span class="lbl">VPV  y</span>
+        <span class="val"><span id="v-vpvY">-136.8</span><span class="unit">%</span></span>
+        <input id="vpvY" type="range" min="-500" max="500" step="0.5" value="-136.79">
+      </div>
+    </section>
+
+    <section class="group">
+      <h2>Derived camera<span class="idx">03</span></h2>
+      <div class="readout-row"><span class="lbl">yaw (az)</span><span class="val" id="r-az">—</span></div>
+      <div class="readout-row"><span class="lbl">pitch (el)</span><span class="val" id="r-el">—</span></div>
+      <div class="readout-row"><span class="lbl">focal (K)</span><span class="val" id="r-K">—</span></div>
+      <div class="readout-row"><span class="lbl">principal x</span><span class="val" id="r-cx">—</span></div>
+      <div class="readout-row"><span class="lbl">principal y</span><span class="val" id="r-cy">—</span></div>
+    </section>
+  </div>
+
+  <div class="mode-panel" data-mode="B" hidden>
+    <section class="group">
+      <h2>Camera orientation<span class="idx">02</span></h2>
+      <div class="ctrl">
+        <span class="lbl">yaw (az)</span>
+        <span class="val"><span id="v-az">58.0</span><span class="unit">°</span></span>
+        <input id="az" type="range" min="0" max="360" step="0.25" value="58">
+      </div>
+      <div class="ctrl">
+        <span class="lbl">pitch (el)</span>
+        <span class="val"><span id="v-el">15.0</span><span class="unit">°</span></span>
+        <input id="el" type="range" min="-60" max="60" step="0.25" value="15">
+      </div>
+      <div class="ctrl">
+        <span class="lbl">field of view</span>
+        <span class="val"><span id="v-fov">115.9</span><span class="unit">°</span></span>
+        <input id="fov" type="range" min="10" max="150" step="0.25" value="115.9">
+      </div>
+    </section>
+
+    <section class="group">
+      <h2>Principal point<span class="idx">03</span></h2>
+      <div class="ctrl">
+        <span class="lbl">px</span>
+        <span class="val"><span id="v-pxp">23.2</span><span class="unit">%</span></span>
+        <input id="pxp" type="range" min="-50" max="150" step="0.25" value="23.22">
+      </div>
+      <div class="ctrl">
+        <span class="lbl">py</span>
+        <span class="val"><span id="v-pyp">28.2</span><span class="unit">%</span></span>
+        <input id="pyp" type="range" min="-50" max="150" step="0.25" value="28.16">
+      </div>
+    </section>
+
+    <section class="group">
+      <h2>Derived vanishing points<span class="idx">04</span></h2>
+      <div class="readout-row"><span class="lbl">VPL</span><span class="val" id="r-vpl">—</span></div>
+      <div class="readout-row"><span class="lbl">VPR</span><span class="val" id="r-vpr">—</span></div>
+      <div class="readout-row"><span class="lbl">VPV</span><span class="val" id="r-vpv">—</span></div>
+      <div class="readout-row"><span class="lbl">horizon y</span><span class="val" id="r-hz">—</span></div>
+    </section>
+  </div>
+
+  <section class="group">
+    <h2>Cube culling<span class="idx">N</span></h2>
+    <div class="ctrl">
+      <span class="lbl">near clip</span>
+      <span class="val"><span id="v-near">1.00</span><span class="unit">u</span></span>
+      <input id="nearClip" type="range" min="0.3" max="3" step="0.05" value="1.0">
+    </div>
+    <div class="ctrl">
+      <span class="lbl">far clip</span>
+      <span class="val"><span id="v-far">22</span><span class="unit">u</span></span>
+      <input id="farClip" type="range" min="5" max="40" step="0.5" value="22">
+    </div>
+  </section>
+
+  <div class="btn-row">
+    <button class="action" id="btn-reset">Reset</button>
+    <button class="action" id="btn-svg">Export SVG</button>
+    <button class="action" id="btn-py">Copy Python</button>
+  </div>
+
+</aside>
+
+<main class="stage">
+  <div class="paper-wrap">
+    <svg id="canvas" viewBox="0 0 420 297" preserveAspectRatio="xMidYMid meet"></svg>
+  </div>
+  <div class="overlay-toggle">
+    <label><input type="checkbox" id="toggleVP" checked><span>VP handles</span></label>
+    <label><input type="checkbox" id="toggleHZ" checked><span>Horizon</span></label>
+  </div>
+</main>
+
+<div class="statusbar">
+  <div class="item"><span class="dot" id="busydot"></span></div>
+  <div class="item"><span class="k">Mode</span><span class="v" id="st-mode">VP-driven</span></div>
+  <div class="item"><span class="k">Cubes</span><span class="v" id="st-cubes">0 + 0c</span></div>
+  <div class="item"><span class="k">Segments</span><span class="v" id="st-segs">0</span></div>
+  <div class="item"><span class="k">Status</span><span class="v" id="st-status">ok</span></div>
+  <div class="spacer"></div>
+  <div class="item"><span class="k">Render</span><span class="v" id="st-ms">—</span></div>
+</div>
+
+<script>
+// ════════════════════════════════════════════════════════════════
+// CUBOID — 3-point perspective studio
+//   Mode A: VP-driven (drag VPs on canvas, camera derived)
+//   Mode B: Camera-driven (az, el, FOV, principal point → VPs)
+// ════════════════════════════════════════════════════════════════
+
+const W = 420, H = 297;
+const s = 1.0, g = 0.2, p = 1.2;
+const NEAR_PLANE = 0.05;
+
+const sub = (a,b) => [a[0]-b[0], a[1]-b[1], a[2]-b[2]];
+const dot = (a,b) => a[0]*b[0] + a[1]*b[1] + a[2]*b[2];
+const cross = (a,b) => [a[1]*b[2]-a[2]*b[1], a[2]*b[0]-a[0]*b[2], a[0]*b[1]-a[1]*b[0]];
+const norm = v => { const m = Math.hypot(v[0],v[1],v[2]); return [v[0]/m, v[1]/m, v[2]/m]; };
+const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+
+function vert(vi) {
+  return [(vi&1)?0.5:-0.5, (vi&2)?0.5:-0.5, (vi&4)?0.5:-0.5];
+}
+const FACE_VERTS = { 0:[1,5,7,3], 1:[4,0,2,6], 2:[3,7,6,2], 3:[0,4,5,1], 4:[5,4,6,7], 5:[0,1,3,2] };
+const CUBE_EDGES = (() => {
+  const out = [];
+  for (let a = 0; a < 8; a++) for (let b = a+1; b < 8; b++) {
+    const d = a ^ b;
+    if ((d & (d-1)) !== 0) continue;
+    let fa, fb;
+    if (d === 1) { fa = (a & 2) ? 2 : 3; fb = (a & 4) ? 4 : 5; }
+    else if (d === 2) { fa = (a & 1) ? 0 : 1; fb = (a & 4) ? 4 : 5; }
+    else { fa = (a & 1) ? 0 : 1; fb = (a & 2) ? 2 : 3; }
+    out.push([a, b, fa, fb]);
+  }
+  return out;
+})();
+
+function convexHull(pts) {
+  if (pts.length < 3) return pts.slice();
+  const P = pts.slice().sort((a,b) => a[0]-b[0] || a[1]-b[1]);
+  const cr = (O,A,B) => (A[0]-O[0])*(B[1]-O[1]) - (A[1]-O[1])*(B[0]-O[0]);
+  const lo = [];
+  for (const q of P) {
+    while (lo.length >= 2 && cr(lo[lo.length-2], lo[lo.length-1], q) <= 0) lo.pop();
+    lo.push(q);
+  }
+  const up = [];
+  for (let i = P.length-1; i >= 0; i--) {
+    const q = P[i];
+    while (up.length >= 2 && cr(up[up.length-2], up[up.length-1], q) <= 0) up.pop();
+    up.push(q);
+  }
+  lo.pop(); up.pop();
+  return lo.concat(up);
+}
+
+// ════════════════════════════════════════════════════════════════
+// CYLINDERS
+// ════════════════════════════════════════════════════════════════
+
+const GAP = 0.2;
+const CYL_R = GAP / 5;       // 0.04
+const CYL_INSET = 1e-3;      // tiny inset from cube face to avoid z-fighting
+const CYL_MIN_DIST = 0.25;   // min distance between sampled origins on face
+const CYL_MARGIN   = 0.10;   // margin from face edge
+
+// 32-bit FNV-ish hash with final avalanche — deterministic from integer args
+function hash32(...args) {
+  let h = 2166136261 >>> 0;
+  for (const a of args) h = Math.imul(h ^ (a | 0), 16777619) >>> 0;
+  h ^= h >>> 16; h = Math.imul(h, 2246822507) >>> 0;
+  h ^= h >>> 13; h = Math.imul(h, 3266489909) >>> 0;
+  h ^= h >>> 16;
+  return h >>> 0;
+}
+
+function mulberry32(seed) {
+  let a = seed >>> 0;
+  return function() {
+    a = (a + 0x6D2B79F5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return (((t ^ (t >>> 14)) >>> 0) / 4294967296);
+  };
+}
+
+// Per-face-pair cache — invalidated when seed/minDist/margin change.
+let faceCylCache = new Map();
+let faceCylCacheKey = '';
+function ensureFaceCylCache() {
+  const key = `${scene.seed}|${CYL_MIN_DIST}|${CYL_MARGIN}`;
+  if (key !== faceCylCacheKey) {
+    faceCylCacheKey = key;
+    faceCylCache.clear();
+  }
+}
+
+// For cube (i,j,k) and axis ∈ {0,1,2}, return the cylinders spanning the +axis gap
+// to cube (i + δ_axis, j + δ_axis, k + δ_axis). Each cylinder: {p1, p2, axis, uIdx, vIdx}.
+function getFacePairCylinders(i, j, k, axis) {
+  const key = `${i},${j},${k},${axis}`;
+  const cached = faceCylCache.get(key);
+  if (cached) return cached;
+
+  const seed = hash32(scene.seed, i + 1000, j + 1000, k + 1000, axis);
+  const rng = mulberry32(seed);
+
+  // Count: 3, 5, or 7 (odd, uniform over the three options)
+  const N = [3, 5, 7][Math.floor(rng() * 3)];
+
+  // Rejection sampling on [-0.5+margin, 0.5-margin]² with min-distance constraint
+  const lo = -0.5 + CYL_MARGIN;
+  const hi =  0.5 - CYL_MARGIN;
+  const span = hi - lo;
+  const pts = [];
+  const MAX_ATTEMPTS = 200;
+  for (let a = 0; a < MAX_ATTEMPTS && pts.length < N; a++) {
+    const u = lo + rng() * span;
+    const v = lo + rng() * span;
+    let ok = true;
+    for (const [pu, pv] of pts) {
+      if (Math.hypot(u - pu, v - pv) < CYL_MIN_DIST) { ok = false; break; }
+    }
+    if (ok) pts.push([u, v]);
+  }
+
+  // Map (u,v) on the face plane to world-space cylinder endpoints
+  const uIdx = (axis + 1) % 3, vIdx = (axis + 2) % 3;
+  const cAi = i, cAj = j, cAk = k;
+  const cBi = i + (axis === 0 ? 1 : 0);
+  const cBj = j + (axis === 1 ? 1 : 0);
+  const cBk = k + (axis === 2 ? 1 : 0);
+  const cubeACenter = [cAi * p, cAj * p, cAk * p];
+  const cubeBCenter = [cBi * p, cBj * p, cBk * p];
+
+  const result = pts.map(([u, v]) => {
+    const p1 = [cubeACenter[0], cubeACenter[1], cubeACenter[2]];
+    p1[axis] += s/2 + CYL_INSET;
+    p1[uIdx] += u;
+    p1[vIdx] += v;
+    const p2 = [cubeBCenter[0], cubeBCenter[1], cubeBCenter[2]];
+    p2[axis] -= s/2 + CYL_INSET;
+    p2[uIdx] += u;
+    p2[vIdx] += v;
+    return { p1, p2, axis, uIdx, vIdx };
+  });
+
+  faceCylCache.set(key, result);
+  return result;
+}
+
+// Full-fidelity prism drawable: project all 2N vertices, compute silhouette, emit visible edges.
+function cylinderDrawable(cyl, cam) {
+  const N = scene.prismSides;
+  const { p1, p2, axis, uIdx, vIdx } = cyl;
+  const uAxis = [0,0,0]; uAxis[uIdx] = 1;
+  const vAxis = [0,0,0]; vAxis[vIdx] = 1;
+
+  // 2N 3D vertices: i=0..N-1 at p1, N..2N-1 at p2, both offset radially.
+  const v3 = new Array(2 * N);
+  const dirs = new Array(N);
+  for (let i = 0; i < N; i++) {
+    const θ = 2 * Math.PI * i / N;
+    const c = Math.cos(θ), sn = Math.sin(θ);
+    const d = [uAxis[0]*c + vAxis[0]*sn, uAxis[1]*c + vAxis[1]*sn, uAxis[2]*c + vAxis[2]*sn];
+    dirs[i] = d;
+    v3[i]     = [p1[0] + CYL_R*d[0], p1[1] + CYL_R*d[1], p1[2] + CYL_R*d[2]];
+    v3[N + i] = [p2[0] + CYL_R*d[0], p2[1] + CYL_R*d[1], p2[2] + CYL_R*d[2]];
+  }
+
+  const v2 = new Array(2 * N);
+  for (let i = 0; i < 2 * N; i++) {
+    v2[i] = cam.toCanvas(v3[i]);
+    if (v2[i] === null) return null;  // any vertex behind near plane → skip
+  }
+
+  // Face visibility.
+  // Cap A at p1 has outward normal -axisVec; cap B at p2 has +axisVec.
+  // Side face i has outward normal ≈ dirs[i] + dirs[(i+1)%N] (perp to axis by construction).
+  const axisVec = [0,0,0]; axisVec[axis] = 1;
+  const camA = sub(cam.cam_pos, p1);
+  const camB = sub(cam.cam_pos, p2);
+  const capAVis = -dot(camA, axisVec) > 0;
+  const capBVis =  dot(camB, axisVec) > 0;
+  const sideVis = new Array(N);
+  for (let i = 0; i < N; i++) {
+    const d0 = dirs[i], d1 = dirs[(i + 1) % N];
+    sideVis[i] = (camA[0]*(d0[0]+d1[0]) + camA[1]*(d0[1]+d1[1]) + camA[2]*(d0[2]+d1[2])) > 0;
+  }
+
+  // Silhouette: convex hull of visible-face vertex projections.
+  const sPts = [];
+  if (capAVis) for (let i = 0; i < N; i++) sPts.push(v2[i]);
+  if (capBVis) for (let i = 0; i < N; i++) sPts.push(v2[N + i]);
+  for (let i = 0; i < N; i++) {
+    if (sideVis[i]) {
+      const j = (i + 1) % N;
+      sPts.push(v2[i], v2[j], v2[N + j], v2[N + i]);
+    }
+  }
+  if (sPts.length < 3) return null;
+  const hull = convexHull(sPts);
+  if (hull.length < 3) return null;
+
+  // BBox reject
+  let mnX=Infinity, mxX=-Infinity, mnY=Infinity, mxY=-Infinity;
+  for (const [x,y] of hull) {
+    if (x<mnX) mnX=x; if (x>mxX) mxX=x;
+    if (y<mnY) mnY=y; if (y>mxY) mxY=y;
+  }
+  if (mxX < 0 || mnX > W || mxY < 0 || mnY > H) return null;
+
+  // Edges: draw if at least one adjacent face is visible.
+  const edges = [];
+  // Longitudinal edges (i, N+i) — between side faces (i-1+N)%N and i.
+  for (let i = 0; i < N; i++) {
+    if (sideVis[(i - 1 + N) % N] || sideVis[i]) edges.push([v2[i], v2[N + i]]);
+  }
+  // Cap A circumferential edges (i, (i+1)%N) — between cap A and side i.
+  for (let i = 0; i < N; i++) {
+    if (capAVis || sideVis[i]) edges.push([v2[i], v2[(i + 1) % N]]);
+  }
+  // Cap B circumferential edges — between cap B and side i.
+  for (let i = 0; i < N; i++) {
+    if (capBVis || sideVis[i]) edges.push([v2[N + i], v2[N + ((i + 1) % N)]]);
+  }
+
+  return { hull, edges };
+}
+
+// Axis-only preview drawable: just the center line.
+function cylinderAxisDrawable(cyl, cam) {
+  const a = cam.toCanvas(cyl.p1);
+  const b = cam.toCanvas(cyl.p2);
+  if (!a || !b) return null;
+  return { hull: null, edges: [[a, b]] };
+}
+
+function cylinderDepth(cyl, cam) {
+  const d1 = sub(cyl.p1, cam.cam_pos);
+  const d2 = sub(cyl.p2, cam.cam_pos);
+  return Math.min(Math.hypot(d1[0],d1[1],d1[2]), Math.hypot(d2[0],d2[1],d2[2]));
+}
+
+// ─── STATE ───
+let mode = 'A';
+const shared = { camX:0.6, camY:0.6, camZ:0.6, nearClip:1.0, farClip:22 };
+const modeA = { vpl:3.0, vpr:75.0, hz:40.0, vpvX:23.22, vpvY:-136.79 };
+const modeB = { az:58.0, el:15.0, fov:115.9, pxp:23.22, pyp:28.16 };
+const scene = { seed: 42, prismSides: 8 };
+
+// LOD: preview (axis-only cylinders) during interaction, full prisms when idle.
+let interacting = false;
+let interactionTimer = null;
+const IDLE_MS = 200;
+
+// ─── MATH ───
+function makeCamera(az, el, K, cx, cy, cam_pos) {
+  const f = [Math.sin(az)*Math.cos(el), Math.sin(el), Math.cos(az)*Math.cos(el)];
+  const r = norm(cross(f, [0,1,0]));
+  const u = cross(r, f);
+  return {
+    forward: f, right: r, up: u, K, cx, cy, cam_pos,
+    toCanvas(P) {
+      const v = sub(P, cam_pos);
+      const xc = dot(r, v), yc = dot(u, v), zc = dot(f, v);
+      if (zc < NEAR_PLANE) return null;
+      return [cx + K * xc / zc, cy - K * yc / zc];
+    }
+  };
+}
+
+function solveFromVPs(vplX, vprX, horizonY, vpvX, vpvY) {
+  const cx = vpvX;
+  const dxL = cx - vplX, dxR = vprX - cx, dyV = horizonY - vpvY;
+  if (dxL <= 0 || dxR <= 0 || dyV === 0)
+    return { error: 'VPV must lie between VPL and VPR horizontally, and off the horizon line' };
+  const root = Math.sqrt(dxL * dxR);
+  const absDy = Math.abs(dyV);
+  if (root > absDy)
+    return { error: 'VPV too close to horizon (would require pitch > 90°)' };
+  let el = Math.asin(root / absDy);
+  if (dyV < 0) el = -el;
+  const az = Math.atan(Math.sqrt(dxR / dxL));
+  const K = root * Math.cos(el);
+  const cy = horizonY - K * Math.tan(el);
+  return { az, el, K, cx, cy };
+}
+
+function vpsFromCamera(az, el, K, cx, cy) {
+  const f = [Math.sin(az)*Math.cos(el), Math.sin(el), Math.cos(az)*Math.cos(el)];
+  const r = norm(cross(f, [0,1,0]));
+  const u = cross(r, f);
+  const proj = d => {
+    const zc = dot(f, d);
+    if (Math.abs(zc) < 1e-9) return null;
+    return [cx + K*dot(r,d)/zc, cy - K*dot(u,d)/zc];
+  };
+  const vpx = proj([1,0,0]), vpz = proj([0,0,1]), vpy = proj([0,1,0]);
+  if (!vpx || !vpz || !vpy) return null;
+  const [vpl, vpr] = [vpx, vpz].sort((a,b) => a[0]-b[0]);
+  return { vpl, vpr, vpv: vpy, horizonY: vpl[1] };
+}
+
+// ─── RENDER ───
+// Interaction state: slider inputs debounce via pingInteraction; drags use startDrag/endDrag.
+function pingInteraction() {
+  interacting = true;
+  if (interactionTimer) clearTimeout(interactionTimer);
+  interactionTimer = setTimeout(() => {
+    interacting = false;
+    interactionTimer = null;
+    schedule();
+  }, IDLE_MS);
+  schedule();
+}
+function startDrag() {
+  interacting = true;
+  if (interactionTimer) { clearTimeout(interactionTimer); interactionTimer = null; }
+  schedule();
+}
+function endDrag() {
+  interacting = false;
+  if (interactionTimer) { clearTimeout(interactionTimer); interactionTimer = null; }
+  schedule();
+}
+
+let scheduled = false;
+function schedule() {
+  if (scheduled) return;
+  scheduled = true;
+  requestAnimationFrame(() => { scheduled = false; render(); });
+}
+
+function setStatus(msg, err) {
+  const e = document.getElementById('st-status');
+  e.textContent = msg;
+  e.classList.toggle('err', !!err);
+}
+
+function render() {
+  const t0 = performance.now();
+  const busy = document.getElementById('busydot');
+  busy.classList.add('active');
+
+  const cam_pos = [shared.camX, shared.camY, shared.camZ];
+
+  let az, el, K, cx, cy;
+  if (mode === 'A') {
+    const sol = solveFromVPs(
+      (modeA.vpl/100)*W, (modeA.vpr/100)*W, (modeA.hz/100)*H,
+      (modeA.vpvX/100)*W, (modeA.vpvY/100)*H
+    );
+    if (sol.error) {
+      setStatus(sol.error, true);
+      document.getElementById('canvas').innerHTML = '';
+      busy.classList.remove('active');
+      return;
+    }
+    ({ az, el, K, cx, cy } = sol);
+    document.getElementById('r-az').textContent = (az*180/Math.PI).toFixed(2) + '°';
+    document.getElementById('r-el').textContent = (el*180/Math.PI).toFixed(2) + '°';
+    document.getElementById('r-K' ).textContent = K.toFixed(2);
+    document.getElementById('r-cx').textContent = cx.toFixed(2);
+    document.getElementById('r-cy').textContent = cy.toFixed(2);
+  } else {
+    az = modeB.az * Math.PI / 180;
+    el = modeB.el * Math.PI / 180;
+    K  = W / (2 * Math.tan(modeB.fov * Math.PI / 360));
+    cx = (modeB.pxp/100) * W;
+    cy = (modeB.pyp/100) * H;
+  }
+  setStatus('ok', false);
+
+  const cam = makeCamera(az, el, K, cx, cy, cam_pos);
+  const hh = s/2;
+  const faceVisible = (c, f) => {
+    switch (f) {
+      case 0: return cam_pos[0] > c[0] + hh;
+      case 1: return cam_pos[0] < c[0] - hh;
+      case 2: return cam_pos[1] > c[1] + hh;
+      case 3: return cam_pos[1] < c[1] - hh;
+      case 4: return cam_pos[2] > c[2] + hh;
+      case 5: return cam_pos[2] < c[2] - hh;
+    }
+  };
+
+  // Enumerate candidate cubes + keep a (i,j,k)→cube lookup so we can do cylinder neighbor checks.
+  const cubes = [];
+  const visibleSet = new Set();
+  const N = 11;
+  for (let i = -2; i < N; i++)
+  for (let j = -2; j < N; j++)
+  for (let k = -2; k < N; k++) {
+    const c = [i*p, j*p, k*p];
+    const dc = sub(c, cam_pos);
+    if (dot(cam.forward, dc) <= 0) continue;
+    const nx = Math.max(Math.abs(cam_pos[0]-c[0]) - hh, 0);
+    const ny = Math.max(Math.abs(cam_pos[1]-c[1]) - hh, 0);
+    const nz = Math.max(Math.abs(cam_pos[2]-c[2]) - hh, 0);
+    if (Math.hypot(nx,ny,nz) < shared.nearClip) continue;
+    const dC = Math.hypot(dc[0], dc[1], dc[2]);
+    if (dC > shared.farClip) continue;
+    cubes.push({ i, j, k, c, d: dC });
+    visibleSet.add(`${i},${j},${k}`);
+  }
+
+  const drawables = [];
+  let segCount = 0;
+
+  // Cube drawables
+  for (const { c, d } of cubes) {
+    const vis = [];
+    for (let f = 0; f < 6; f++) if (faceVisible(c, f)) vis.push(f);
+    if (!vis.length) continue;
+    const proj = new Array(8).fill(null);
+    let bad = false;
+    for (const f of vis) {
+      for (const vi of FACE_VERTS[f]) {
+        if (proj[vi] === null) {
+          const v3 = [vert(vi)[0]*s + c[0], vert(vi)[1]*s + c[1], vert(vi)[2]*s + c[2]];
+          proj[vi] = cam.toCanvas(v3);
+          if (proj[vi] === null) { bad = true; break; }
+        }
+      }
+      if (bad) break;
+    }
+    if (bad) continue;
+    const pts = [];
+    for (const f of vis) for (const vi of FACE_VERTS[f]) pts.push(proj[vi]);
+    if (pts.length < 3) continue;
+    const hull = convexHull(pts);
+    if (hull.length < 3) continue;
+    let mnX=Infinity, mxX=-Infinity, mnY=Infinity, mxY=-Infinity;
+    for (const [x,y] of hull) {
+      if (x<mnX) mnX=x; if (x>mxX) mxX=x;
+      if (y<mnY) mnY=y; if (y>mxY) mxY=y;
+    }
+    if (mxX < 0 || mnX > W || mxY < 0 || mnY > H) continue;
+    const visSet = new Set(vis);
+    const edges = [];
+    for (const [a, b, fa, fb] of CUBE_EDGES) {
+      if (visSet.has(fa) || visSet.has(fb)) {
+        edges.push([proj[a], proj[b]]);
+        segCount++;
+      }
+    }
+    drawables.push({ hull, edges, depth: d });
+  }
+
+  // Cylinder drawables (only if both endpoint cubes are in visibleSet).
+  // Each cube owns its +X / +Y / +Z face-pairs as the canonical side.
+  ensureFaceCylCache();
+  let cylinderCount = 0;
+  for (const cube of cubes) {
+    const { i, j, k } = cube;
+    for (let axis = 0; axis < 3; axis++) {
+      const ni = i + (axis === 0 ? 1 : 0);
+      const nj = j + (axis === 1 ? 1 : 0);
+      const nk = k + (axis === 2 ? 1 : 0);
+      if (!visibleSet.has(`${ni},${nj},${nk}`)) continue;
+      const cyls = getFacePairCylinders(i, j, k, axis);
+      for (const cyl of cyls) {
+        cylinderCount++;
+        const drw = interacting
+          ? cylinderAxisDrawable(cyl, cam)
+          : cylinderDrawable(cyl, cam);
+        if (!drw) continue;
+        drw.depth = cylinderDepth(cyl, cam);
+        drawables.push(drw);
+        segCount += drw.edges.length;
+      }
+    }
+  }
+
+  // Back-to-front sort (largest depth first)
+  drawables.sort((a, b) => b.depth - a.depth);
+
+  const parts = [];
+  for (const d of drawables) {
+    if (d.hull) {
+      const hullStr = d.hull.map(p => `${p[0].toFixed(2)},${p[1].toFixed(2)}`).join(' ');
+      parts.push(`<polygon class="sil" points="${hullStr}"/>`);
+    }
+    for (const [p0, p1] of d.edges) {
+      parts.push(`<polyline points="${p0[0].toFixed(2)},${p0[1].toFixed(2)} ${p1[0].toFixed(2)},${p1[1].toFixed(2)}"/>`);
+    }
+  }
+
+  const showVP = document.getElementById('toggleVP').checked;
+  const showHZ = document.getElementById('toggleHZ').checked;
+  const vps = vpsFromCamera(az, el, K, cx, cy);
+  const horizonY = cy + K * Math.tan(el);
+
+  if (showHZ)
+    parts.push(`<line class="horizon-line" x1="-500" y1="${horizonY.toFixed(2)}" x2="${W+500}" y2="${horizonY.toFixed(2)}"/>`);
+
+  if (mode === 'A' && showVP && vps) {
+    parts.push(`<line class="horizon-hit" data-drag="horizon" x1="0" y1="${horizonY.toFixed(2)}" x2="${W}" y2="${horizonY.toFixed(2)}"/>`);
+    const handles = [
+      { name:'VPL', pos:vps.vpl, key:'vpl' },
+      { name:'VPR', pos:vps.vpr, key:'vpr' },
+      { name:'VPV', pos:vps.vpv, key:'vpv' },
+    ];
+    for (const hd of handles) {
+      const tx = clamp(hd.pos[0], 5, W-5);
+      const ty = clamp(hd.pos[1], 5, H-5);
+      const off = (tx !== hd.pos[0] || ty !== hd.pos[1]);
+      if (off)
+        parts.push(`<line class="tether" x1="${tx.toFixed(2)}" y1="${ty.toFixed(2)}" x2="${hd.pos[0].toFixed(2)}" y2="${hd.pos[1].toFixed(2)}"/>`);
+      parts.push(`<circle class="handle-ring" cx="${tx.toFixed(2)}" cy="${ty.toFixed(2)}" r="3.5"/>`);
+      parts.push(`<circle class="handle-core" cx="${tx.toFixed(2)}" cy="${ty.toFixed(2)}" r="1.2"/>`);
+      parts.push(`<circle class="handle-hit"  cx="${tx.toFixed(2)}" cy="${ty.toFixed(2)}" r="6" data-drag="${hd.key}"/>`);
+      parts.push(`<text class="handle-label" x="${(tx+5).toFixed(2)}" y="${(ty-4).toFixed(2)}">${hd.name}${off?' ↝':''}</text>`);
+    }
+  } else if (showVP && vps) {
+    const items = [['VPL', vps.vpl], ['VPR', vps.vpr], ['VPV', vps.vpv]];
+    for (const [n, pt] of items) {
+      const x = pt[0], y = pt[1];
+      if (x > -400 && x < W+400 && y > -700 && y < H+700) {
+        parts.push(`<circle class="vp-mark" cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="2.5"/>`);
+        parts.push(`<line class="vp-mark" x1="${(x-4).toFixed(2)}" y1="${y.toFixed(2)}" x2="${(x+4).toFixed(2)}" y2="${y.toFixed(2)}"/>`);
+        parts.push(`<line class="vp-mark" x1="${x.toFixed(2)}" y1="${(y-4).toFixed(2)}" x2="${x.toFixed(2)}" y2="${(y+4).toFixed(2)}"/>`);
+        parts.push(`<text class="vp-label" x="${(x+4).toFixed(2)}" y="${(y-4).toFixed(2)}">${n}</text>`);
+      }
+    }
+  }
+
+  document.getElementById('canvas').innerHTML = parts.join('');
+
+  if (mode === 'A') wireDragHandlers();
+
+  if (mode === 'B' && vps) {
+    document.getElementById('r-vpl').textContent = `${vps.vpl[0].toFixed(1)}, ${vps.vpl[1].toFixed(1)}`;
+    document.getElementById('r-vpr').textContent = `${vps.vpr[0].toFixed(1)}, ${vps.vpr[1].toFixed(1)}`;
+    document.getElementById('r-vpv').textContent = `${vps.vpv[0].toFixed(1)}, ${vps.vpv[1].toFixed(1)}`;
+    document.getElementById('r-hz' ).textContent = horizonY.toFixed(1);
+  }
+
+  document.getElementById('st-cubes').textContent = `${cubes.length} + ${cylinderCount}c`;
+  document.getElementById('st-segs').textContent = segCount;
+  document.getElementById('st-ms').textContent = (performance.now() - t0).toFixed(1) + ' ms' + (interacting ? ' (preview)' : '');
+
+  setTimeout(() => busy.classList.remove('active'), 120);
+}
+
+// ─── DRAG ───
+function wireDragHandlers() {
+  document.getElementById('canvas').querySelectorAll('[data-drag]').forEach(el => {
+    el.addEventListener('pointerdown', dragStart);
+  });
+}
+
+function dragStart(e) {
+  e.preventDefault();
+  startDrag();
+  const kind = e.currentTarget.getAttribute('data-drag');
+  const svg = document.getElementById('canvas');
+  const rect = svg.getBoundingClientRect();
+  const toSVG = ev => [
+    ((ev.clientX - rect.left) / rect.width)  * W,
+    ((ev.clientY - rect.top)  / rect.height) * H,
+  ];
+  // Capture starting state so drag is relative (no teleport if handle is clamped)
+  const [sx, sy] = toSVG(e);
+  const start = { ...modeA };
+  const onMove = ev => {
+    const [x, y] = toSVG(ev);
+    const dxPct = (x - sx) / W * 100;
+    const dyPct = (y - sy) / H * 100;
+    switch (kind) {
+      case 'vpl':
+        modeA.vpl = clamp(start.vpl + dxPct, -200, 200);
+        syncSlider('vpl'); break;
+      case 'vpr':
+        modeA.vpr = clamp(start.vpr + dxPct, -200, 200);
+        syncSlider('vpr'); break;
+      case 'vpv':
+        modeA.vpvX = clamp(start.vpvX + dxPct, -500, 500);
+        modeA.vpvY = clamp(start.vpvY + dyPct, -700, 700);
+        syncSlider('vpvX'); syncSlider('vpvY'); break;
+      case 'horizon':
+        modeA.hz = clamp(start.hz + dyPct, -200, 200);
+        syncSlider('hz'); break;
+    }
+    syncAtoB();
+    schedule();
+  };
+  const onUp = () => {
+    window.removeEventListener('pointermove', onMove);
+    window.removeEventListener('pointerup', onUp);
+    window.removeEventListener('pointercancel', onUp);
+    endDrag();
+  };
+  window.addEventListener('pointermove', onMove);
+  window.addEventListener('pointerup', onUp);
+  window.addEventListener('pointercancel', onUp);
+}
+
+function syncSlider(key) {
+  const el = document.getElementById(key);
+  if (!el) return;
+  const min = parseFloat(el.min), max = parseFloat(el.max);
+  el.value = clamp(modeA[key], min, max);
+  const vEl = document.getElementById('v-' + key);
+  if (vEl) vEl.textContent = fmtModeA(key, modeA[key]);
+}
+
+// ─── BINDINGS ───
+function fmtShared(k, v) {
+  if (k === 'camX' || k === 'camY' || k === 'camZ') return v.toFixed(3);
+  if (k === 'nearClip') return v.toFixed(2);
+  if (k === 'farClip')  return v.toFixed(0);
+  return v;
+}
+function fmtModeA(k, v) { return v.toFixed(1); }
+function fmtModeB(k, v) { return v.toFixed(1); }
+
+['camX','camY','camZ','nearClip','farClip'].forEach(k => {
+  const el = document.getElementById(k);
+  const vId = k === 'nearClip' ? 'v-near' : k === 'farClip' ? 'v-far' : 'v-' + k;
+  const vEl = document.getElementById(vId);
+  el.addEventListener('input', () => {
+    shared[k] = parseFloat(el.value);
+    vEl.textContent = fmtShared(k, shared[k]);
+    pingInteraction();
+  });
+});
+
+// Scene sliders (seed, prism sides) — cache invalidated on seed change.
+['seed','prism'].forEach(k => {
+  const el = document.getElementById(k);
+  const vEl = document.getElementById('v-' + k);
+  el.addEventListener('input', () => {
+    if (k === 'seed') scene.seed = parseInt(el.value);
+    else scene.prismSides = parseInt(el.value);
+    vEl.textContent = el.value;
+    pingInteraction();
+  });
+});
+
+['vpl','vpr','hz','vpvX','vpvY'].forEach(k => {
+  const el = document.getElementById(k);
+  const vEl = document.getElementById('v-' + k);
+  el.addEventListener('input', () => {
+    modeA[k] = parseFloat(el.value);
+    vEl.textContent = fmtModeA(k, modeA[k]);
+    syncAtoB();
+    pingInteraction();
+  });
+});
+
+['az','el','fov','pxp','pyp'].forEach(k => {
+  const el = document.getElementById(k);
+  const vEl = document.getElementById('v-' + k);
+  el.addEventListener('input', () => {
+    modeB[k] = parseFloat(el.value);
+    vEl.textContent = fmtModeB(k, modeB[k]);
+    syncBtoA();
+    pingInteraction();
+  });
+});
+
+document.getElementById('toggleVP').addEventListener('change', schedule);
+document.getElementById('toggleHZ').addEventListener('change', schedule);
+
+document.querySelectorAll('.mode-toggle button').forEach(btn => {
+  btn.addEventListener('click', () => switchMode(btn.dataset.mode));
+});
+
+function switchMode(newMode) {
+  if (newMode === mode) return;
+  // State is always synced — toggle is purely a view change.
+  mode = newMode;
+  document.querySelectorAll('.mode-toggle button').forEach(b => {
+    b.classList.toggle('active', b.dataset.mode === mode);
+  });
+  document.querySelectorAll('.mode-panel').forEach(p => {
+    p.hidden = (p.dataset.mode !== mode);
+  });
+  document.getElementById('st-mode').textContent = mode === 'A' ? 'VP-driven' : 'Camera-driven';
+  schedule();
+}
+
+// ─── BIDIRECTIONAL SYNC ───
+// Whenever Mode A params change, push to Mode B (and vice versa).
+// If the translation fails (invalid config), the other mode keeps its last valid state.
+function syncAtoB() {
+  const sol = solveFromVPs(
+    (modeA.vpl/100)*W, (modeA.vpr/100)*W, (modeA.hz/100)*H,
+    (modeA.vpvX/100)*W, (modeA.vpvY/100)*H
+  );
+  if (sol.error) return;
+  modeB.az  = sol.az * 180/Math.PI;
+  modeB.el  = sol.el * 180/Math.PI;
+  modeB.fov = 2 * Math.atan(W/(2*sol.K)) * 180/Math.PI;
+  modeB.pxp = sol.cx/W*100;
+  modeB.pyp = sol.cy/H*100;
+  syncSlidersFor('B');
+}
+
+function syncBtoA() {
+  const az = modeB.az*Math.PI/180, el = modeB.el*Math.PI/180;
+  const K  = W/(2*Math.tan(modeB.fov*Math.PI/360));
+  const cx = (modeB.pxp/100)*W, cy = (modeB.pyp/100)*H;
+  const vps = vpsFromCamera(az, el, K, cx, cy);
+  if (!vps) return;
+  modeA.vpl  = vps.vpl[0]/W*100;
+  modeA.vpr  = vps.vpr[0]/W*100;
+  modeA.hz   = vps.horizonY/H*100;
+  modeA.vpvX = vps.vpv[0]/W*100;
+  modeA.vpvY = vps.vpv[1]/H*100;
+  syncSlidersFor('A');
+}
+
+function syncSlidersFor(m) {
+  const keys = m === 'A' ? ['vpl','vpr','hz','vpvX','vpvY'] : ['az','el','fov','pxp','pyp'];
+  const src = m === 'A' ? modeA : modeB;
+  const fmt = m === 'A' ? fmtModeA : fmtModeB;
+  for (const k of keys) {
+    const el = document.getElementById(k);
+    const vEl = document.getElementById('v-' + k);
+    const min = parseFloat(el.min), max = parseFloat(el.max);
+    el.value = clamp(src[k], min, max);
+    vEl.textContent = fmt(k, src[k]);
+  }
+}
+
+document.getElementById('btn-reset').addEventListener('click', () => {
+  Object.assign(shared, { camX:0.6, camY:0.6, camZ:0.6, nearClip:1.0, farClip:22 });
+  Object.assign(modeA,  { vpl:3.0, vpr:75.0, hz:40.0, vpvX:23.22, vpvY:-136.79 });
+  Object.assign(modeB,  { az:58.0, el:15.0, fov:115.9, pxp:23.22, pyp:28.16 });
+  Object.assign(scene,  { seed:42, prismSides:8 });
+  ['camX','camY','camZ'].forEach(k => {
+    document.getElementById(k).value = shared[k];
+    document.getElementById('v-'+k).textContent = fmtShared(k, shared[k]);
+  });
+  document.getElementById('nearClip').value = shared.nearClip;
+  document.getElementById('v-near').textContent = fmtShared('nearClip', shared.nearClip);
+  document.getElementById('farClip').value = shared.farClip;
+  document.getElementById('v-far').textContent = fmtShared('farClip', shared.farClip);
+  document.getElementById('seed').value = scene.seed;
+  document.getElementById('v-seed').textContent = scene.seed;
+  document.getElementById('prism').value = scene.prismSides;
+  document.getElementById('v-prism').textContent = scene.prismSides;
+  syncSlidersFor('A');
+  syncSlidersFor('B');
+  schedule();
+});
+
+document.getElementById('btn-svg').addEventListener('click', () => {
+  const svgNode = document.getElementById('canvas').cloneNode(true);
+  svgNode.querySelectorAll('.handle-hit,.handle-core,.handle-ring,.handle-label,.horizon-hit,.vp-mark,.vp-label,.horizon-line,.tether').forEach(n => n.remove());
+  svgNode.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+  svgNode.setAttribute('width', '420mm');
+  svgNode.setAttribute('height', '297mm');
+  const blob = new Blob([svgNode.outerHTML], { type: 'image/svg+xml' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `cuboid_${Date.now()}.svg`;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+});
+
+document.getElementById('btn-py').addEventListener('click', () => {
+  let az, el, K, cx, cy;
+  if (mode === 'A') {
+    const sol = solveFromVPs(
+      (modeA.vpl/100)*W, (modeA.vpr/100)*W, (modeA.hz/100)*H,
+      (modeA.vpvX/100)*W, (modeA.vpvY/100)*H
+    );
+    if (sol.error) return;
+    ({ az, el, K, cx, cy } = sol);
+  } else {
+    az = modeB.az*Math.PI/180;
+    el = modeB.el*Math.PI/180;
+    K  = W/(2*Math.tan(modeB.fov*Math.PI/360));
+    cx = (modeB.pxp/100)*W; cy = (modeB.pyp/100)*H;
+  }
+  const py =
+`# --- paste into cuboid.py ---
+cam_pos = np.array([${shared.camX.toFixed(4)}, ${shared.camY.toFixed(4)}, ${shared.camZ.toFixed(4)}])
+az = math.radians(${(az*180/Math.PI).toFixed(3)})
+el = math.radians(${(el*180/Math.PI).toFixed(3)})
+
+# Override the VP-target calibration with these exact values
+# (replace the K / cx / cy derivation block):
+K  = ${K.toFixed(4)}
+cx = ${cx.toFixed(4)}
+cy = ${cy.toFixed(4)}
+
+MIN_CORNER_DIST = ${shared.nearClip.toFixed(2)}
+MAX_CENTER_DIST = ${shared.farClip.toFixed(1)}
+`;
+  navigator.clipboard.writeText(py).then(() => {
+    const btn = document.getElementById('btn-py');
+    const prev = btn.textContent;
+    btn.textContent = '✓ Copied';
+    setTimeout(() => btn.textContent = prev, 1200);
+  });
+});
+
+render();
+</script>
+</body>
+</html>

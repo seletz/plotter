@@ -1,0 +1,12 @@
+[tools]
+uv = "latest"
+
+
+[tasks.calibrate]
+run = [
+    "uv run calibrate/calibration_gen.py",
+    "vpype read calibrate/svg/calibration_a1.svg linemerge linesort write tmp/cal_optimised.svg"
+]
+
+[tasks.cuboid]
+run = "uv run cuboid/cuboid.py cuboid/svg/cuboid.svg"
