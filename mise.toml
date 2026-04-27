@@ -1,12 +1,23 @@
+[settings]
+python.uv_venv_auto = "create|source"
+
 [tools]
 uv = "latest"
-
 
 [tasks.calibrate]
 run = [
     "uv run calibrate/calibration_gen.py",
-    "vpype read calibrate/svg/calibration_a1.svg linemerge linesort write tmp/cal_optimised.svg"
+    "vpype read calibrate/svg/calibration_a1.svg deduplicate linemerge linesort write tmp/cal_optimised.svg"
 ]
 
 [tasks.cuboid]
 run = "uv run cuboid/cuboid.py cuboid/svg/cuboid.svg"
+
+[tasks."docs:build"]
+description = "Build the static site into ./site"
+run = "uv run zensical build"
+
+[tasks."docs:serve"]
+description = "Serve the site locally with live reload at http://localhost:8000"
+run = "uv run zensical serve"
+

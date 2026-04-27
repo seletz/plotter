@@ -1,1 +1,7 @@
 tmp
+site
+.cache
+.DS_Store
+.venv
+__pycache__
+*.pyc

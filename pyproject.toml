@@ -12,5 +12,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "deduplicate>=0.1.0",
     "vpype>=1.15.0",
+    "zensical>=0.0.37",
 ]
